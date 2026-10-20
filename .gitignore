@@ -5,3 +5,4 @@ venv/
 *.db
 dist/
 build/
+*.zip
