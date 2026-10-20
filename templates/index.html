@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhishGuard AI - Phishing & Malicious URL Detector</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',system-ui,Arial,sans-serif}
+body{background:#070b14;color:#e2e8f0;min-height:100vh}
+header{background:#0f172a;border-bottom:1px solid #1e293b;padding:14px 28px;display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:12px}
+.pg{width:40px;height:40px;background:linear-gradient(135deg,#38bdf8,#2dd4bf);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#000}
+header h1{font-size:18px;line-height:1}
+header p{font-size:11px;color:#94a3b8}
+.badge{background:#0b2a1a;border:1px solid #14532d;color:#4ade80;font-size:11px;padding:6px 12px;border-radius:999px}
+.container{max-width:1280px;margin:22px auto;padding:0 18px;display:grid;grid-template-columns:1.55fr 0.85fr;gap:18px}
+.card{background:#111827;border:1px solid #1e293b;border-radius:16px;padding:18px}
+.card h2{font-size:14px;margin-bottom:4px}
+.sub{font-size:12px;color:#94a3b8;margin-bottom:14px}
+.inputRow{display:flex;gap:10px}
+.inputRow input{flex:1;background:#0b1220;border:1px solid #1e293b;color:#e2e8f0;padding:13px 14px;border-radius:10px;font-size:13px;outline:none}
+.inputRow input:focus{border-color:#38bdf8}
+.inputRow button{background:linear-gradient(135deg,#2dd4bf,#38bdf8);border:none;color:#001018;font-weight:800;padding:0 20px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.detect{font-size:11px;color:#38bdf8;margin-top:8px;min-height:14px}
+.resultPanel{margin-top:16px;border-radius:12px;padding:16px;display:none}
+.resultPanel.phishing{background:#2a1214;border:1px solid #7f1d1d}
+.resultPanel.suspicious{background:#2a1e0a;border:1px solid #92400e}
+.resultPanel.safe{background:#0a2214;border:1px solid #14532d}
+.ringWrap{display:flex;gap:16px;align-items:center}
+.ring{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;flex-shrink:0}
+.ring.phishing{background:conic-gradient(#ef4444 var(--p), #1f2937 0)}
+.ring.suspicious{background:conic-gradient(#f59e0b var(--p), #1f2937 0)}
+.ring.safe{background:conic-gradient(#22c55e var(--p), #1f2937 0)}
+.ring span{background:#111827;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.vtBadge{font-size:11px;background:#0b1220;border:1px solid #1e293b;padding:5px 8px;border-radius:999px;display:inline-block;margin-top:8px}
+.findings{margin-top:16px}
+.findings h3{font-size:13px}
+.findGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.find{border:1px solid #1e293b;background:#0b1220;border-radius:10px;padding:10px;font-size:12px}
+.find b{display:block;font-size:12px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sumBox{border:1px solid #1e293b;background:#0b1220;border-radius:12px;padding:12px}
+.sumBox b{font-size:22px;display:block}
+.hist table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.hist th{text-align:left;color:#94a3b8;font-size:11px;padding:6px}
+.hist td{padding:8px 6px;border-top:1px solid #1e293b}
+.pill{padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.pill.phishing{background:#7f1d1d;color:#fecaca} .pill.suspicious{background:#78350f;color:#fde68a} .pill.safe{background:#14532d;color:#bbf7d0}
+@media(max-width:900px){.container{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="pg">PG</div><div><h1>PhishGuard AI</h1><p>AI-Powered Phishing & Malicious URL Detector</p></div></div>
+  ="display:flex;gap:10px;align-items:center"><div class="badge">● Model active — Random Forest v1.2</div><div style="font-size:11px;color:#94a3b8"></div></div>
+</header><div style
+<div class="container">
+  <div class="card">
+    <h2>Scan a URL</h2>
+    <p class="sub">Paste a link, email or hash to check it for phishing indicators — auto-detects</p>
+    <div class="inputRow">
+      <input id="scanInput" placeholder="Enter URL, Email, or Hash... (auto-detects)" oninput="liveDetect()">
+      <button id="scanBtn" onclick="doScan()">Scan Now</button>
+    </div>
+    <div id="detectHint" class="detect"></div>
+    <div id="resultPanel" class="resultPanel">
+      <div class="ringWrap">
+        <div id="ring" class="ring"><span id="ringText">0%</span></div>
+        <div><div id="verdict" style="font-weight:900;font-size:14px"></div><div id="conf" style="font-size:12px;color:#94a3b8;margin-top:2px"></div><div id="vtInfo" class="vtBadge"></div></div>
+      </div>
+      <div class="findings"><h3>Why this was flagged</h3><p style="font-size:11px;color:#94a3b8">Feature signals used by the detection engine</p><div id="findGrid" class="findGrid"></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Scan Summary</h2><p class="sub">This session</p>
+    <div class="summary">
+      <div class="sumBox"><b id="cPhish" style="color:#ef4444">0</b><span style="font-size:11px;color:#94a3b8">Phishing Detected</span></div>
+      <div class="sumBox"><b id="cSusp" style="color:#f59e0b">0</b><span style="font-size:11px;color:#94a3b8">Suspicious</span></div>
+      <div class="sumBox"><b id="cSafe" style="color:#22c55e">0</b><span style="font-size:11px;color:#94a3b8">Safe</span></div>
+      <div class="sumBox"><b id="cTotal" style="color:#38bdf8">0</b><span style="font-size:11px;color:#94a3b8">Total Scanned</span></div>
+    </div>
+    <div class="hist" style="margin-top:16px"><b style="font-size:13px">Recent Scans</b><table><thead><tr><th>URL</th><th>VERDICT</th><th>RISK</th></tr></thead><tbody id="histBody"><tr><td colspan="3" style="color:#64748b">No scans yet</td></tr></tbody></table></div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+function liveDetect(){
+ const v=$('scanInput').value.trim();
+ let t=""; if(/^[a-fA-F0-9]{32}$|^[a-fA-F0-9]{40}$|^[a-fA-F0-9]{64}$/.test(v)) t="Detected: Hash";
+ else if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)||/From:|Subject:/i.test(v)) t="Detected: Email";
+ else if(v) t="Detected: URL"; $('detectHint').textContent=t;
+}
+async function doScan(){
+ const val=$('scanInput').value.trim(); if(!val) return alert("Paste URL, Email or Hash first");
+ $('scanBtn').textContent="Scanning..."; $('scanBtn').disabled=true;
+ try{
+  const res=await fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input:val})});
+  const data=await res.json(); if(!res.ok) throw new Error(data.error||"Scan failed");
+  renderResult(data); loadStats(); loadHistory();
+ }catch(e){ alert(e.message); } finally{ $('scanBtn').textContent="Scan Now"; $('scanBtn').disabled=false; }
+}
+function renderResult(d){
+ const score=d.score??0; const verdict=(d.verdict||d.status||"safe").toLowerCase();
+ const panel=$('resultPanel'); panel.style.display="block";
+ panel.className="resultPanel "+(verdict==="phishing"||verdict==="malicious"?"phishing":verdict==="suspicious"?"suspicious":"safe");
+ const ring=$('ring'); ring.style.setProperty('--p',score+"%"); ring.className="ring "+(verdict==="phishing"||verdict==="malicious"?"phishing":verdict==="suspicious"?"suspicious":"safe");
+ $('ringText').textContent=score+"%";
+ $('verdict').textContent=verdict==="phishing"||verdict==="malicious"?"⚠ PHISHING DETECTED — High Risk":verdict==="suspicious"?"⚠ SUSPICIOUS — Medium Risk":"✓ SAFE — Low Risk";
+ $('conf').textContent=`Confidence: ${score}% malicious · Type: ${d.type||d.kind||"url"} · ${d.target||d.input||""}`;
+ const vt=d.vt; let vtText="VirusTotal: not checked"; if(vt&&vt.found) vtText=`VirusTotal: ${vt.flagged_count||vt.malicious||0} / ${vt.total_engines||vt.total||0} engines flagged`; else if(d.vt_error) vtText="VirusTotal: "+d.vt_error; else if(vt&&!vt.found) vtText=vt.message||"VirusTotal: no report found"; $('vtInfo').textContent=vtText;
+ const grid=$('findGrid'); grid.innerHTML=""; const findings=d.findings||[];
+ if(findings.length===0) grid.innerHTML='<div class="find ok"><b>No signals</b> No phishing features detected</div>';
+ findings.slice(0,6).forEach(f=>{ const sev=(f.severity||"ok").toLowerCase(); const color=sev==="bad"?"#ef4444":sev==="warn"?"#f59e0b":"#22c55e"; const div=document.createElement('div'); div.className="find "+sev; div.innerHTML=`<b><span class="dot" style="background:${color}"></span>${f.title||f.id}</b><span style="color:#94a3b8">${f.detail||""}</span>`; grid.appendChild(div); });
+}
+async function loadStats(){ try{ const r=await fetch('/api/stats'); const s=await r.json(); $('cPhish').textContent=s.phishing||0; $('cSusp').textContent=s.suspicious||0; $('cSafe').textContent=s.safe||0; $('cTotal').textContent=s.total||0; }catch{} }
+async function loadHistory(){ try{ const r=await fetch('/api/history?limit=5'); const rows=await r.json(); const b=$('histBody'); if(!rows.length) return; b.innerHTML=""; rows.forEach(row=>{ const v=(row.verdict||"").toLowerCase(); const cls=v==="phishing"||v==="malicious"?"phishing":v==="suspicious"?"suspicious":"safe"; b.innerHTML+=`<tr><td title="${row.target}">${row.target.slice(0,28)}</td><td><span class="pill ${cls}">${row.verdict}</span></td><td>${row.score}%</td></tr>`; }); }catch{} }
+loadStats(); loadHistory();
+</script>
+</body>
+</html>
+
+

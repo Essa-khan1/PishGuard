@@ -1,0 +1,1 @@
+Run: pip install -r requirements.txt && python app_web.py
