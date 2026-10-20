@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: phishguard
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-server.txt
+    # one worker: the rate limiter is in memory; long timeout: VirusTotal scans can take ~25 s
+    startCommand: gunicorn app:app --workers 1 --threads 8 --timeout 120
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: VT_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: BEHIND_PROXY
+        value: "1"
